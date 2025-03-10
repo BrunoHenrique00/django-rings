@@ -1,5 +1,9 @@
 # Desafio Fullstack: Os Anéis de Poder
 
+## Demonstração
+
+https://github.com/user-attachments/assets/05fd3678-a78d-41db-975e-7730ac9e0e5e
+
 ## Tecnologias Utilizadas
 
 - **Django**: Framework web para o backend.
