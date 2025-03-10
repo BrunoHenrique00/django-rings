@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anéis</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">💍 Desafio Fullstack: Os Anéis de Poder</h1>
+        <form id="anelForm" class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" class="form-control" id="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="poder">Poder</label>
+                    <input type="text" class="form-control" id="poder" required>
+                </div>
+                <div class="form-group">
+                    <label for="portador">Portador</label>
+                    <input type="text" class="form-control" id="portador" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="forjadoPor">Forjado Por</label>
+                    <input type="text" class="form-control" id="forjadoPor" required>
+                </div>
+                <div class="form-group">
+                    <label for="imagem">Imagem URL</label>
+                    <input type="url" class="form-control" id="imagem" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Criar Anel</button>
+        </form>
+        <hr>
+        <h2 class="mb-4">Lista de Anéis</h2>
+        <ul id="anelList" class="list-group"></ul>
+    </div>
+
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Atualizar Anel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateAnelForm">
+                        <input type="hidden" id="updateId">
+                        <div class="form-group">
+                            <label for="updateNome">Nome</label>
+                            <input type="text" class="form-control" id="updateNome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="updatePoder">Poder</label>
+                            <input type="text" class="form-control" id="updatePoder" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="updatePortador">Portador</label>
+                            <input type="text" class="form-control" id="updatePortador" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateForjadoPor">Forjado Por</label>
+                            <input type="text" class="form-control" id="updateForjadoPor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateImagem">Imagem URL</label>
+                            <input type="url" class="form-control" id="updateImagem" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Atualizar Anel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const anelForm = document.getElementById('anelForm');
+            const anelList = document.getElementById('anelList');
+            const updateAnelForm = document.getElementById('updateAnelForm');
+
+            anelForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const data = {
+                    nome: document.getElementById('nome').value,
+                    poder: document.getElementById('poder').value,
+                    portador: document.getElementById('portador').value,
+                    forjadoPor: document.getElementById('forjadoPor').value,
+                    imagem: document.getElementById('imagem').value
+                };
+
+                fetch('/api/rings/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Anel criado com sucesso!');
+                        fetchAnels();
+                    }
+                })
+                .catch(error => alert('Error:', error));
+            });
+
+            updateAnelForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const id = document.getElementById('updateId').value;
+                const data = {
+                    nome: document.getElementById('updateNome').value,
+                    poder: document.getElementById('updatePoder').value,
+                    portador: document.getElementById('updatePortador').value,
+                    forjadoPor: document.getElementById('updateForjadoPor').value,
+                    imagem: document.getElementById('updateImagem').value
+                };
+
+                fetch(`/api/rings/${id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        fetchAnels();
+                        alert('Anel atualizado com sucesso!');
+                        $('#updateModal').modal('hide');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            function fetchAnels() {
+                fetch('/api/rings/')
+                .then(response => response.json())
+                .then(data => {
+                    anelList.innerHTML = '';
+                    data.forEach(anel => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `
+                            <img src="${anel.imagem}" class="img-thumbnail float-left mr-2" style="width: 100px; height: 100px;">
+                            <b>Nome:</b> ${anel.nome} </br> <b>Poder:</b> ${anel.poder} </br> <b>Portador:</b> ${anel.portador} </br> <b>Forjado Por:</b> ${anel.forjadoPor}
+                            <button class="btn btn-danger btn-sm float-right ml-2" onclick="deleteAnel(${anel.id})">Delete</button>
+                            <button class="btn btn-warning btn-sm float-right" onclick="showUpdateModal(${anel.id}, '${anel.nome}', '${anel.poder}', '${anel.portador}', '${anel.forjadoPor}', '${anel.imagem}')">Update</button>
+                        `;
+                        anelList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            window.deleteAnel = function(id) {
+                fetch(`/api/rings/${id}/`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        fetchAnels();
+                        alert('Anel deletado com sucesso!');
+                    } else {
+                        alert('Erro ao deletar anel.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            };
+
+            window.showUpdateModal = function(id, nome, poder, portador, forjadoPor, imagem) {
+                document.getElementById('updateId').value = id;
+                document.getElementById('updateNome').value = nome;
+                document.getElementById('updatePoder').value = poder;
+                document.getElementById('updatePortador').value = portador;
+                document.getElementById('updateForjadoPor').value = forjadoPor;
+                document.getElementById('updateImagem').value = imagem;
+                $('#updateModal').modal('show');
+            };
+
+            fetchAnels();
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
